@@ -2,7 +2,7 @@ workflow "New workflow" {
   on = "push"
   resolves = [
     "NPM test",
-    "GitHub Action for Zeit",
+    "Deploy to Zeit",
   ]
 }
 
