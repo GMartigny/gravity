@@ -74,7 +74,7 @@ export default (canvas, media) => {
             levelIndicator.text = `${level + 1} / ${levelsData.length}`;
             clear(true);
 
-            (currentData.walls || []).forEach((data) => {
+            currentData.walls.forEach((data) => {
                 const wall = new Wall(...data);
                 walls.add(wall);
                 scene.add(wall);
