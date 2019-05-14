@@ -10,7 +10,8 @@
         "lint": "eslint \"src/**/*.js\"",
         "test": "echo \"Error: no test specified\" && exit 1",
         "play": "webpack --mode=development --watch",
-        "build": "webpack --mode=production"
+        "build": "webpack --mode=production",
+        "now-build": "npm run build"
     },
     "dependencies": {
         "pencil.js": "^1.6.6"

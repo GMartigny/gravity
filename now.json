@@ -1,0 +1,14 @@
+{
+    "version": 2,
+    "alias": "gravity.now.sh",
+    "builds": [
+        {
+            "src": "index.html",
+            "use": "@now/html-minifier"
+        },
+        {
+            "src": "package.json",
+            "use": "@now/static-build"
+        }
+    ]
+}
