@@ -1,3 +1,6 @@
 .idea/
+.github/
+test/
 .npmrc
+main.js
 readme.md

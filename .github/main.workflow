@@ -23,8 +23,9 @@ action "Filter only tags" {
   needs = "NPM test"
 }
 
-action "GitHub Action for Zeit" {
+action "Deploy to Zeit" {
   uses = "actions/zeit-now@5c51b26db987d15a0133e4c760924896b4f1512f"
+  args = "--target production"
   needs = ["Filter only tags"]
   secrets = ["ZEIT_TOKEN"]
 }
