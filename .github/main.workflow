@@ -3,7 +3,6 @@ workflow "New workflow" {
   resolves = [
     "NPM test",
     "GitHub Action for Zeit",
-    "NPM lint",
   ]
 }
 
