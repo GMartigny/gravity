@@ -1,8 +1,9 @@
-import { Line, MouseEvent } from "pencil.js";
+import { Line, MouseEvent, Position } from "pencil.js";
 
 export default class Wall extends Line {
-    constructor (from, to = from.clone(), type) {
-        super(from, [to.subtract(from)]);
+    constructor (from, to = Position.from(from).clone(), type = Wall.types.unmovable) {
+        const toPosition = Position.from(to);
+        super(from, [toPosition.subtract(from)]);
 
         this.type = type;
         this.options.stroke = type.color;
