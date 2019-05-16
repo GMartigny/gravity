@@ -1,4 +1,4 @@
-import { BaseEvent } from "pencil.js";
+import { BaseEvent, Scene } from "pencil.js";
 
 // Screens
 import titleBuilder from "./screens/title";
@@ -50,7 +50,17 @@ const prepareScreens = async (...args) => {
     const all = {};
     Object.keys(builders).forEach((key) => {
         const screen = builders[key](...args);
+        screen.id = key;
         screen.on(ScreenEvent.events.change, event => displayScreen(all[event.to], event.params), true);
+
+        if (DEV) {
+            screen.on(Scene.events.draw, () => {
+                if (screen === currentScreen && screen.fps < 30) {
+                    console.warn(`Dip in FPS to ${screen.fps} in ${screen.id}`);
+                }
+            }, true);
+        }
+
         screen.hide();
         all[key] = screen;
     });

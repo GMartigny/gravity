@@ -8,7 +8,7 @@ module.exports = (env, argv) => ({
             title: "Gravity",
         }),
         new DefinePlugin({
-            EDITOR: argv.mode === "development",
+            DEV: argv.mode === "development",
         }),
     ],
     module: {

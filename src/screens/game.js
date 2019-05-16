@@ -1,4 +1,4 @@
-/* globals EDITOR */
+/* globals DEV */
 
 import { Scene, MouseEvent, Position, Vector, Text, Select, Button, Math as M } from "pencil.js";
 import verlet from "../verlet";
@@ -90,7 +90,7 @@ export default (canvas, media) => {
         }
     }
 
-    if (EDITOR) {
+    if (DEV) {
         console.warn("You are in editor mode !");
 
         ball.draggable();
@@ -143,7 +143,6 @@ export default (canvas, media) => {
     const minDraw = 12;
     scene
         .on([ScreenEvent.events.show, ScreenEvent.events.change], (event) => {
-            console.log(event);
             ({ level } = event.params);
             setup();
         })
