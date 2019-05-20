@@ -4,14 +4,14 @@ import { Scene, MouseEvent, Position, Vector, Text, Select, Button, Math as M } 
 import Save from "../save";
 import verlet from "../verlet";
 import { gravity } from "../constants";
-import { ScreenEvent, screens } from "../screens";
+import { ScreenEvent, screenIds } from "../screens";
 import Controller from "../components/controller";
 import Wall from "../components/wall";
 import Ball from "../components/ball";
 import Portal from "../components/portal";
 import levelsData from "../levels";
 
-export default (canvas, media) => {
+export default (canvas, media = {}) => {
     const { font } = media;
 
     const scene = new Scene(canvas, {
@@ -27,7 +27,7 @@ export default (canvas, media) => {
         value: "🡄",
     });
     backButton.on(MouseEvent.events.click, () => {
-        scene.fire(new ScreenEvent(ScreenEvent.events.change, scene, screens.levelSelection));
+        scene.fire(new ScreenEvent(ScreenEvent.events.change, scene, screenIds.levelSelection));
     });
 
     const levelIndicator = new Text([scene.width - 10, 10], "", {
@@ -139,7 +139,7 @@ export default (canvas, media) => {
      * Save current level
      */
     function saveCurrentLevel () {
-        saved[currentLevel] = [...walls].filter(wall => wall.type !== Wall.types.unmovable);
+        saved[currentLevel] = [...walls].filter(wall => wall.type !== Wall.types.unmovable).map(wall => wall.toJSON());
         Save.store("level", saved);
     }
 

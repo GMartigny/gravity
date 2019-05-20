@@ -1,4 +1,4 @@
-const storage = localStorage;
+const storage = window.localStorage;
 
 const encode = string => btoa(string);
 

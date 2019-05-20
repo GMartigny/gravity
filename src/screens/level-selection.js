@@ -1,8 +1,8 @@
 import { Scene, Button, Container, Rectangle, Slider, Text, MouseEvent, Line, Circle } from "pencil.js";
-import { ScreenEvent, screens } from "../screens";
+import { ScreenEvent, screenIds } from "../screens";
 import levelsData from "../levels";
 
-export default (canvas, media) => {
+export default (canvas, media = {}) => {
     const { font } = media;
 
     const scene = new Scene(canvas, {
@@ -15,7 +15,7 @@ export default (canvas, media) => {
         value: "🡄",
     });
     backButton.on(MouseEvent.events.click, () => {
-        scene.fire(new ScreenEvent(ScreenEvent.events.change, scene, screens.title));
+        scene.fire(new ScreenEvent(ScreenEvent.events.change, scene, screenIds.title));
     });
 
     const previewsContainer = new Container();
@@ -36,7 +36,7 @@ export default (canvas, media) => {
             // .on(MouseEvent.events.hover, () => preview.options.scale.set(1.1))
             // .on(MouseEvent.events.leave, () => preview.options.scale.set(1))
             .on(MouseEvent.events.click, () => {
-                scene.fire(new ScreenEvent(ScreenEvent.events.change, scene, screens.game, {
+                scene.fire(new ScreenEvent(ScreenEvent.events.change, scene, screenIds.game, {
                     level: index,
                 }));
             });

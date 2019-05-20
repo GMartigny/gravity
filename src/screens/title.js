@@ -1,10 +1,10 @@
 import { Scene, Text, Button, MouseEvent, Position, Vector } from "pencil.js";
-import { ScreenEvent, screens } from "../screens";
+import { ScreenEvent, screenIds } from "../screens";
 import { gravity } from "../constants";
 import verlet from "../verlet";
 import Wall from "../components/wall";
 
-export default (canvas, media) => {
+export default (canvas, media = {}) => {
     const { font } = media;
     const scene = new Scene(canvas, {
         fill: "#6266eb",
@@ -12,7 +12,7 @@ export default (canvas, media) => {
 
     const fontSize = 80;
     const titlePosition = [scene.width / 2, -fontSize];
-    const title = new Text(titlePosition, "Gravity", {
+    const title = new Text(undefined, "Gravity", {
         font,
         fontSize,
         fill: Wall.types.unmovable.color,
@@ -21,6 +21,16 @@ export default (canvas, media) => {
     });
     title.draggable();
 
+    /**
+     *
+     */
+    function resetTitlePosition () {
+        title.position.set(...titlePosition);
+        if (title.previousPosition) {
+            title.previousPosition.set(...titlePosition);
+        }
+    }
+
     const wall = new Wall(scene.center.subtract(title.width / 2, 0), scene.center.add(title.width / 2, 0));
 
     const gameButton = new Button(scene.center.add(0, 100), {
@@ -28,7 +38,7 @@ export default (canvas, media) => {
     });
     gameButton
         .on(MouseEvent.events.click, () => {
-            scene.fire(new ScreenEvent(ScreenEvent.events.change, scene, screens.levelSelection));
+            scene.fire(new ScreenEvent(ScreenEvent.events.change, scene, screenIds.levelSelection));
         });
 
     const getForces = () => {
@@ -55,11 +65,12 @@ export default (canvas, media) => {
     };
 
     scene.add(wall, title, gameButton)
+        .on(ScreenEvent.events.show, resetTitlePosition)
         .on(Scene.events.draw, () => {
             verlet(title, getForces);
 
             if (title.position.distance(scene.center) > scene.width) {
-                title.position.set(...titlePosition);
+                resetTitlePosition();
             }
         }, true);
 
