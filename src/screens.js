@@ -22,8 +22,8 @@ class ScreenEvent extends BaseEvent {
 
     static get events () {
         return {
-            change: "change",
-            show: "show",
+            change: "screen-change",
+            show: "screen-show",
         };
     }
 }
@@ -55,8 +55,8 @@ const prepareScreens = async (...args) => {
 
         if (DEV) {
             screen.on(Scene.events.draw, () => {
-                if (screen === currentScreen && screen.fps < 30) {
-                    console.warn(`Dip in FPS to ${screen.fps} in ${screen.id}`);
+                if (screen === currentScreen && screen.fps && screen.fps < 30) {
+                    console.warn(`Dip in FPS to ${screen.fps.toFixed(0)} in ${screen.id}`);
                 }
             }, true);
         }

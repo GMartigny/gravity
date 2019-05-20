@@ -1,6 +1,16 @@
-import { Line, MouseEvent, Position } from "pencil.js";
+import { Line, MouseEvent, Position, BaseEvent } from "pencil.js";
 
+/**
+ * Wall class
+ * @class
+ */
 export default class Wall extends Line {
+    /**
+     * Wall constructor
+     * @param {PositionDefinition} from -
+     * @param {PositionDefinition} to -
+     * @param {WallType} type -
+     */
     constructor (from, to = Position.from(from).clone(), type = Wall.types.unmovable) {
         const toPosition = Position.from(to);
         super(from, [toPosition.subtract(from)]);
@@ -13,8 +23,9 @@ export default class Wall extends Line {
 
         if (type !== Wall.types.unmovable) {
             this.draggable();
-            this.on(MouseEvent.events.drag, () => this.options.opacity = 0.7)
-                .on(MouseEvent.events.drop, () => this.options.opacity = 1);
+            this.on(MouseEvent.events.drag, () => this.options.opacity = 0.7, true)
+                .on(MouseEvent.events.drop, () => this.options.opacity = 1, true)
+                .on(MouseEvent.events.click, () => this.fire(new BaseEvent(Wall.events.remove, this)), true);
         }
     }
 
@@ -39,6 +50,12 @@ export default class Wall extends Line {
             this.position,
             this.to,
         ];
+    }
+
+    static get events() {
+        return {
+            remove: "wall-remove",
+        };
     }
 }
 

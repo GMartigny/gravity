@@ -1,5 +1,5 @@
 # Gravity
-[![Support me on Patreon](https://badgen.net/badge/become/a%20patron/F96753?icon=patreon)](https://www.patreon.com/gmartigny)
+[![Support me on Patreon](https://flat.badgen.net/badge/become/a%20patron/F96753?icon=patreon)](https://www.patreon.com/gmartigny)
 
 Addictive puzzle game using only gravity.
 

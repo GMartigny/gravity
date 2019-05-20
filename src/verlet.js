@@ -1,6 +1,11 @@
 import { friction } from "./constants";
 
-export default (component, forces) => {
+/**
+ * Do Verlet's integration of movement
+ * @param {Object} component
+ * @param {Function} getForces
+ */
+export default (component, getForces) => {
     const previous = component.position.clone();
 
     if (!component.isDragged) {
@@ -11,9 +16,9 @@ export default (component, forces) => {
                     .multiply(1 - friction),
             );
         }
-
-        component.position.add(forces());
     }
+
+    component.position.add(getForces(component));
 
     component.previousPosition = previous;
 };

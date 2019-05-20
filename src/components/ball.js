@@ -1,13 +1,14 @@
-import { Circle, RadialGradient, Position } from "pencil.js";
+import { Circle, RadialGradient, Position, Color } from "pencil.js";
 
 export default class Ball extends Circle {
     constructor (position) {
         const radius = 20;
         super(position, radius);
 
+        const color = new Color(1, 0, 0);
         this.options.fill = new RadialGradient([-radius / 3, -radius / 3], radius, {
-            0: "#ff8080",
-            1: "#ff0000",
+            0: color.clone().lightness(0.8),
+            1: color,
         });
 
         this.startingPosition = new Position();
