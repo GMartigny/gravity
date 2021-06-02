@@ -15,7 +15,7 @@ export default (canvas, media = {}) => {
     const title = new Text(undefined, "Gravity", {
         font,
         fontSize,
-        fill: Wall.types.unmovable.color,
+        fill: Wall.types.solid.color,
         align: Text.alignments.center,
         origin: [0, -fontSize / 2],
     });

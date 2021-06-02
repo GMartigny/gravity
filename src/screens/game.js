@@ -1,15 +1,13 @@
 /* globals DEV */
 
-import { Scene, MouseEvent, Position, Vector, Text, Select, Button, Math as M } from "pencil.js";
-import Save from "../save";
+import { Scene, MouseEvent, Position, Vector, Text, Select, Button, Container, Circle, Math as M } from "pencil.js";
 import verlet from "../verlet";
 import { gravity } from "../constants";
 import { ScreenEvent, screenIds } from "../screens";
-import Controller from "../components/controller";
 import Wall from "../components/wall";
 import Ball from "../components/ball";
-import Portal from "../components/portal";
-import levelsData from "../levels";
+import Hole from "../components/hole";
+import levels from "../levels";
 
 export default (canvas, media = {}) => {
     const { font } = media;
@@ -18,8 +16,11 @@ export default (canvas, media = {}) => {
         fill: "#8cdff2",
     });
 
+    const scaler = new Container(scene.center);
+
+    const spinner = new Container();
+
     let currentLevel = 0;
-    const saved = Save.get("level") || [];
 
     const backButton = new Button([10, 10], {
         font,
@@ -36,152 +37,114 @@ export default (canvas, media = {}) => {
         fontSize: 20,
         align: Text.alignments.right,
     });
-    const scoreIndicator = new Text([10, 35], "0", {
-        font,
-        fill: "#222",
-        fontSize: 12,
-    });
-    const controller = new Controller([scene.width / 2, scene.height - 100]);
     const ball = new Ball();
-    const portal = new Portal();
     const walls = new Set();
+    const holes = [];
 
+    scaler.add(
+        ball,
+        spinner,
+    );
     scene.add(
+        scaler,
         backButton,
         levelIndicator,
-        // scoreIndicator,
-        controller,
-        ball,
-        portal,
+        new Circle(scene.center, 4),
     );
 
-    /**
-     * Write score to the view
-     */
-    function setScore () {
-        const score = [...walls].reduce((acc, wall) => {
-            if (wall.type !== Wall.types.unmovable) {
-                return acc + wall.length;
-            }
-            return acc;
-        }, 0);
-        scoreIndicator.text = score.toFixed(0);
-    }
+    const resetBall = () => {
+        ball.position.set(0);
+        if (ball.previousPosition) {
+            ball.previousPosition.set(0);
+        }
+    };
 
-    /**
-     * Reset the view
-     */
-    function reset () {
-        controller.state = Controller.STOP;
-        ball.position.set(ball.startingPosition);
-        ball.previousPosition = null;
-    }
-
-    /**
-     * Clear the view
-     * @param {Boolean} force - Clear everything
-     */
-    function clear (force) {
-        ball.startingPosition.set(levelsData[currentLevel].start);
-        portal.position.set(levelsData[currentLevel].end);
-        reset();
-
-        walls.forEach((wall) => {
-            if (force || wall.type !== Wall.types.unmovable) {
-                wall.delete();
-                walls.delete(wall);
-            }
-        });
-        setScore();
-    }
-
-    controller.on(Controller.events.reset, () => reset())
-        .on(Controller.events.clear, () => clear());
+    const clear = () => {
+        walls.clear();
+        holes.length = 0;
+        spinner.empty();
+        resetBall();
+    };
 
     /**
      * Setup the view
      */
     function setup () {
-        const currentData = levelsData[currentLevel];
+        const currentData = levels[currentLevel];
         if (currentData) {
-            levelIndicator.text = `${currentLevel + 1} / ${levelsData.length}`;
-            clear(true);
+            clear();
+            levelIndicator.text = `${currentLevel + 1} / ${levels.length}`;
 
-            currentData.walls.forEach((data) => {
-                const wall = new Wall(...data);
+            const data = currentData();
+            data.walls.forEach((pos) => {
+                const wall = new Wall(...pos);
                 walls.add(wall);
-                scene.add(wall);
+                spinner.add(wall);
             });
 
-            const savedData = saved[currentLevel];
-            if (savedData) {
-                savedData.forEach((data) => {
-                    const wall = new Wall(...data, Wall.types.user);
-                    walls.add(wall);
-                    scene.add(wall);
-                });
-            }
+            data.holes.forEach((pos) => {
+                const hole = new Hole(pos);
+                holes.push(hole);
+                spinner.add(hole);
+            });
         }
     }
 
     /**
      * Win this level
      */
-    function win () {
-        reset();
-        if (levelsData[currentLevel + 1]) {
-            currentLevel += 1;
-            setup();
-        }
-    }
+    // function win () {
+    //     reset();
+    //     if (levelsData[currentLevel + 1]) {
+    //         currentLevel += 1;
+    //         setup();
+    //     }
+    // }
 
-    /**
-     * Save current level
-     */
-    function saveCurrentLevel () {
-        saved[currentLevel] = [...walls].filter(wall => wall.type !== Wall.types.unmovable).map(wall => wall.toJSON());
-        Save.store("level", saved);
-    }
+    // if (DEV) {
+    //     console.warn("You are in editor mode !");
+    //
+    //     ball.draggable();
+    //     ball.on(MouseEvent.events.drag, () => ball.startingPosition.set(ball.position));
+    //     portal.draggable();
+    //
+    //     const exportButton = new Button([0, scene.height / 2], {
+    //         value: "Export",
+    //     });
+    //     exportButton.on(MouseEvent.events.click, () => {
+    //         const data = {
+    //             start: ball.position,
+    //             end: portal.position,
+    //             walls: [...walls],
+    //         };
+    //         console.log(JSON.stringify(data));
+    //     });
+    //     scene.add(exportButton);
+    //
+    //     const levelSelector = new Select([exportButton.background.width, scene.height / 2], Object.keys(levelsData));
+    //     levelSelector.on(Select.events.change, () => {
+    //         currentLevel = +levelSelector.value;
+    //         setup();
+    //     });
+    //     scene.add(levelSelector);
+    // }
 
-    if (DEV) {
-        console.warn("You are in editor mode !");
-
-        ball.draggable();
-        ball.on(MouseEvent.events.drag, () => ball.startingPosition.set(ball.position));
-        portal.draggable();
-
-        const exportButton = new Button([0, scene.height / 2], {
-            value: "Export",
-        });
-        exportButton.on(MouseEvent.events.click, () => {
-            const data = {
-                start: ball.position,
-                end: portal.position,
-                walls: [...walls],
-            };
-            console.log(JSON.stringify(data));
-        });
-        scene.add(exportButton);
-
-        const levelSelector = new Select([exportButton.background.width, scene.height / 2], Object.keys(levelsData));
-        levelSelector.on(Select.events.change, () => {
-            currentLevel = +levelSelector.value;
-            setup();
-        });
-        scene.add(levelSelector);
-    }
-
-    const getForces = (yarn) => {
+    const getForces = (moving) => {
         const forces = new Position();
 
         forces.add(gravity);
 
         walls.forEach((wall) => {
-            const closest = (new Vector(wall.position, wall.to)).getClosestToPoint(yarn.position);
-            const distance = yarn.position.distance(closest);
-            const field = yarn.radius + (wall.width / 2);
+            const absolute = [
+                wall.position.clone(),
+                wall.to,
+            ].map(pos => pos.rotate(spinner.options.rotation).add(spinner.position));
+            const absoluteVector = new Vector(...absolute);
+            const closest = absoluteVector.getClosestToPoint(moving.position);
+            const distance = moving.position.distance(closest);
+            const field = moving.radius + (wall.width / 2);
             if (distance < field) {
-                const pushBack = yarn.position.clone()
+                const pushBack = moving.position.clone()
                     .subtract(closest)
                     .divide(distance)
                     .multiply(distance - field)
@@ -193,65 +156,54 @@ export default (canvas, media = {}) => {
         return forces;
     };
 
-    let draw = null;
-    const minDraw = 12;
+    const setScale = () => {
+        const distance = ball.position.distance();
+        const ratio = Math.min(2, (scene.height / 2.5) / distance);
+
+        scaler.options.scale.lerp([ratio, ratio], 0.1);
+    };
+
+    const lerp = (from, to, ratio) => from + ((to - from) * ratio);
+
+    const setRotation = (position) => {
+        const vector = position.clone()
+            .subtract(scene.center);
+        const { rotation } = spinner.options;
+        const target = Math.atan2(vector.y, vector.x) / M.radianCircle + 0.75;
+
+        const round = Math.round(rotation);
+        const poss = [round - 1, round, round + 1].map(x => x + target);
+        const diffs = poss.map(x => Math.abs(x - rotation));
+        const min = Math.min(...diffs);
+        const minIndex = diffs.indexOf(min);
+
+        spinner.options.rotation = lerp(rotation, poss[minIndex], 0.1);
+    };
+
     scene
-        .on([ScreenEvent.events.show, ScreenEvent.events.change], (event) => {
-            ({ level: currentLevel } = event.params);
+        .on(ScreenEvent.events.show, (event) => {
+            currentLevel = event.params.level;
             setup();
         })
-        .on(MouseEvent.events.down, (event) => {
-            draw = new Wall(event.position, undefined, Wall.types.user);
-            draw.options.opacity = 0.7;
-        }, true)
-        .on(MouseEvent.events.move, (event) => {
-            if (draw) {
-                if (M.equals(event.position.x, draw.position.x, minDraw)) {
-                    event.position.x = draw.position.x;
-                }
-                if (M.equals(event.position.y, draw.position.y, minDraw)) {
-                    event.position.y = draw.position.y;
-                }
-                if (event.position.distance(draw.position) > minDraw) {
-                    draw.to = event.position;
-                }
-                if (!draw.parent && draw.length > minDraw) {
-                    scene.add(draw);
-                }
-            }
-        })
-        .on(MouseEvent.events.up, () => {
-            if (draw) {
-                if (draw.length >= minDraw) {
-                    draw.options.opacity = 1;
-                    walls.add(draw);
-                    setScore();
-                    saveCurrentLevel();
-                    draw.on(MouseEvent.events.drop, saveCurrentLevel, true);
-                }
-                else {
-                    draw.delete();
-                }
-            }
-            draw = null;
-        })
-        .on(Wall.events.remove, (event) => {
-            const { target } = event;
-            walls.delete(target);
-            target.delete();
-            setScore();
-            saveCurrentLevel();
-        })
         .on(Scene.events.draw, () => {
-            if (controller.state === Controller.PLAY) {
-                verlet(ball, getForces);
-
-                ball.options.rotation += (ball.position.x - ball.previousPosition.x) / 100;
-
-                if (ball.previousPosition.distance(portal.position) < ball.radius + portal.radius) {
-                    win();
-                }
+            const fall = holes.some((hole) => {
+                const absolute = hole.position.clone().rotate(spinner.options.rotation).add(spinner.position);
+                return absolute.distance(ball.position) < (ball.radius + hole.radius);
+            });
+            if (fall) {
+                resetBall();
             }
+
+            setScale();
+            setRotation(scene.cursorPosition);
+            verlet(ball, getForces);
+
+            ball.options.rotation += (ball.position.x - ball.previousPosition.x) / 100;
+
+            // if (ball.previousPosition.distance(portal.position) < ball.radius + portal.radius) {
+            //     win();
+            // }
+            // }
         }, true);
 
     return scene;

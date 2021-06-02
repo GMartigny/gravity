@@ -26,7 +26,8 @@ export default (canvas, media = {}) => {
     const ratio = 180 / 900;
     const fontSize = height * 0.7;
     const bound = width + (margin * 2);
-    const previews = levelsData.map((level, index) => {
+    const previews = levelsData.map((data, index) => {
+        const level = data();
         const preview = new Rectangle([(index * bound) + (bound / 2), scene.height / 2], width, height, {
             fill: "#8cdff2",
             origin: Rectangle.origins.center,
@@ -51,22 +52,23 @@ export default (canvas, media = {}) => {
         });
         const origin = preview.getOrigin();
         preview.add(
-            new Circle(level.start.map(n => n * ratio), 20 * ratio, {
-                fill: "red",
-                origin,
-            }),
-            new Circle(level.end.map(n => n * ratio), 20 * ratio, {
-                fill: "blue",
-                origin,
-            }),
-            ...level.walls.map((wall) => {
-                const position = wall[0].map(n => n * ratio);
-                return new Line(position, [wall[1].map((n, i) => n * ratio - position[i])], {
-                    stroke: "#222",
-                    strokeWidth: 12 * ratio,
-                    origin,
-                });
-            }),
+            // new Circle(level.start.map(n => n * ratio), 20 * ratio, {
+            //     fill: "red",
+            //     origin,
+            // }),
+            // new Circle(level.end.map(n => n * ratio), 20 * ratio, {
+            //     fill: "blue",
+            //     origin,
+            // }),
+            // ...level.map((wall) => {
+            //     wall[1].subtract(wall[0]);
+            //     const positions = wall.map(position => position.multiply(ratio).add(preview.width / 2, preview.height / 2));
+            //     return new Line(positions[0], [positions[1]], {
+            //         stroke: "#222",
+            //         strokeWidth: 12 * ratio,
+            //         origin,
+            //     });
+            // }),
             nb,
         );
 

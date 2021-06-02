@@ -1,4 +1,4 @@
-import { Line, MouseEvent, Position, BaseEvent } from "pencil.js";
+import { Line, Position } from "pencil.js";
 
 /**
  * Wall class
@@ -11,22 +11,48 @@ export default class Wall extends Line {
      * @param {PositionDefinition} to -
      * @param {WallType} type -
      */
-    constructor (from, to = Position.from(from).clone(), type = Wall.types.unmovable) {
-        const toPosition = Position.from(to);
+    constructor (from, to, type = Wall.types.solid) {
+        const toPosition = Position.from(to).clone();
         super(from, [toPosition.subtract(from)]);
+
+        if (typeof type === "string") {
+            type = Wall.types[type];
+        }
 
         this.type = type;
         this.options.stroke = type.color;
         this.options.strokeWidth = type.width;
         this.elasticity = type.elasticity;
-        this.options.cursor = type.cursor;
 
-        if (type !== Wall.types.unmovable) {
-            this.draggable();
-            this.on(MouseEvent.events.drag, () => this.options.opacity = 0.7, true)
-                .on(MouseEvent.events.drop, () => this.options.opacity = 1, true)
-                .on(MouseEvent.events.click, () => this.fire(new BaseEvent(Wall.events.remove, this)), true);
-        }
+        // if (movable) {
+        //     this.draggable();
+        //     this.on(MouseEvent.events.drag, () => this.options.opacity = 0.7, true)
+        //         .on(MouseEvent.events.drop, () => this.options.opacity = 1, true)
+        //         .on(MouseEvent.events.click, () => this.fire(new BaseEvent(Wall.events.remove, this)), true);
+        //
+        //     const handleOptions = {
+        //         fill: "red",
+        //     };
+        //     // FIXME
+        //     const origin = this.position.clone();
+        //     const dest = this.points[0].clone();
+        //     const startHandle = new Circle([0, 0], type.width / 2, handleOptions);
+        //     startHandle.draggable();
+        //     startHandle
+        //         .on(MouseEvent.events.drag, ({ position }) => {
+        //             this.points[0].set(dest.clone().subtract(position));
+        //             this.position.set(origin.clone().add(position));
+        //             startHandle.position.set(0);
+        //         })
+        //         .on(MouseEvent.events.drop, () => {
+        //             origin.set(this.position);
+        //             dest.set(this.points[0]);
+        //         });
+        //     const endHandle = new Circle(this.points[0], type.width / 2, handleOptions);
+        //     endHandle.draggable();
+        //     endHandle.on(MouseEvent.events.drag, ({ position }) => this.points[0].set(position));
+        //     this.add(startHandle, endHandle);
+        // }
     }
 
     get to () {
@@ -49,33 +75,38 @@ export default class Wall extends Line {
         return [
             this.position,
             this.to,
+            Object.keys(Wall.types).find(type => type === this.type),
         ];
     }
 
-    static get events() {
+    static get events () {
         return {
             remove: "wall-remove",
         };
     }
 }
 
+/**
+ * @typedef {Object} WallType
+ * @prop {String} color
+ * @prop {Number} elasticity
+ * @prop {Number} width
+ */
+/**
+ * @type {{
+ *     solid: WallType,
+ *     bouncy: WallType,
+ * }}
+ */
 Wall.types = {
-    unmovable: {
-        color: "#222",
-        elasticity: 0.4,
-        width: 12,
-        cursor: Line.cursors.default,
-    },
-    user: {
+    solid: {
         color: "#555",
-        elasticity: 0.4,
-        width: 12,
-        cursor: Line.cursors.pointer,
+        elasticity: 0.7,
+        width: 20,
     },
     bouncy: {
         color: "#7e711f",
-        elasticity: 0.7,
-        width: 16,
-        cursor: Line.cursors.pointer,
+        elasticity: 0.1,
+        width: 26,
     },
 };
